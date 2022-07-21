@@ -14,7 +14,7 @@ async function validateGame(req, res, next) {
         const {rows: name} = await connection.query(`SELECT (name) FROM games WHERE name = '${game.name}'`)
         
         if(name.length !== 0){
-            return res.status(409).send("Game name already exist")
+            return res.status(409).send("Game already exist")
         }
         
         next()
