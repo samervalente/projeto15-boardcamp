@@ -6,7 +6,7 @@ async function validateGame(req, res, next) {
     try {
         const result = gameSchema.validate(game)
         const {rows:gameID} = await connection.query(`SELECT (id) FROM categories WHERE id = ${game.categoryId}`)
-    
+        console.log(gameID.length)
         if(gameID.length === 0 || result.error){
             return res.status(400).send("Id categorie doesn't exist or invalid payload")           
         }
