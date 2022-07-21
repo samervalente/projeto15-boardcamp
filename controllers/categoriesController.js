@@ -15,7 +15,7 @@ async function listCategories(req, res) {
         const {rows: categories} = await connection.query(`SELECT * FROM categories`)
         res.send(categories).status(200)
     } catch (error) {
-        return res.sendStatus(500)
+         res.sendStatus(500)
     }
 }
 

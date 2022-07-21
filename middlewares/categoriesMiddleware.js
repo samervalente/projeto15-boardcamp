@@ -1,11 +1,12 @@
-import categoriesSchema from "../schemas/categoriesSchema.js"
 import connection from "../database/postgre.js"
+import categorieSchema from "../schemas/categorieSchema.js"
+
 
 async function validateCategorie(req, res, next){
     const categorie = req.body
     
    try {
-    const result = categoriesSchema.validate(categorie)
+    const result = categorieSchema.validate(categorie)
     if(result.error){
         return res.sendStatus(400)
     }
@@ -21,7 +22,7 @@ async function validateCategorie(req, res, next){
     
 
    } catch (error) {
-        return res.sendStatus(500)
+         res.sendStatus(500)
    }
 
 }
