@@ -14,6 +14,13 @@ async function insertCustomer(req, res){
 
 async function listCustomers(req, res){
     try {
+
+        if(req.query.cpf){
+            const cpf = req.query.cpf
+            const {rows: customer} = await connection.query(`SELECT * FROM customers WHERE cpf LIKE '${cpf}%' `)
+            return res.send(customer).status(200)
+        }
+
         const {rows: customers} = await connection.query("SELECT * FROM customers")
         res.send(customers).status(200)
     } catch (error) {
@@ -31,4 +38,16 @@ async function listCustomersById(req,res){
     }
 }
 
-export {insertCustomer, listCustomers, listCustomersById}
+async function updateCustomer(req, res){
+    const customer = req.body
+    const id = Number(req.params.id)
+    try {
+        await connection.query(
+         `UPDATE customers SET name='${customer.name}', phone='${customer.phone}', cpf='${customer.cpf}', birthday='${customer.birthday}' WHERE id = $1`,[id])
+         res.sendStatus(200)
+    } catch (error) {
+        res.sendStatus(500)
+    }
+}
+
+export {insertCustomer, listCustomers, listCustomersById, updateCustomer}

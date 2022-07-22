@@ -14,8 +14,8 @@ async function validateCustomer(req,res,next){
         
         const {rows: customerDB} = await connection.query(
          `SELECT (cpf) FROM customers WHERE cpf = '${customer.cpf}'`)
-      
-        if(customerDB.length !== 0){
+         console.log()   
+        if(customerDB.length !== 0 && req.route.methods.post){
             return res.sendStatus(409)
         }    
 
