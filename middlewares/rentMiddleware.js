@@ -3,20 +3,28 @@ import rentSchema from "../schemas/rentSchema.js";
 
 async function validateRent(req, res, next){
     const rent = req.body
+   
     try {
-        const resultValidate = rentSchema.validate(rent)
-        const {rows: gameId} = await connection.query(`SELECT (id) FROM games WHERE id = ${rent.gameId}`)
-        const {rows: stockTotal} = await connection.query(`SELECT ("stockTotal") FROM games WHERE id = ${rent.gameId}`)
+        const resultValidate = rentSchema.validate(rent, {abortEarly: false})
+        if(resultValidate.error){
+            const erros = resultValidate.error.details.map(value => value.message)
+            return res.status(400).send(erros)
+        }
 
-        if(resultValidate.error || !gameId[0].id || stockTotal[0].stockTotal === 0){
+        const {rows: CustomerAndGameData} = await connection.query(`SELECT customers.id as idCustomer, games."stockTotal", games.id as idGame FROM customers
+        JOIN games
+        ON customers.id = $1 AND games.id = $2`,[rent.customerId, rent.gameId])
+        
+        if(CustomerAndGameData.length === 0 || CustomerAndGameData[0].stockTotal === 0){
             return res.sendStatus(400)
         }
-        res.locals.stockTotal = stockTotal
+        res.locals.stockTotal = CustomerAndGameData[0].stockTotal
+      
         next()
 
-
     } catch (error) {
-        
+        console.log(error)
+         res.sendStatus(500)
     }
 }
 
@@ -30,7 +38,7 @@ async function validateFinishRent(req, res, next){
         }
 
         if(rent[0].returnDate !== null){
-            return res.sendStatus(400)
+            return res.status(400).send("Rent already finished")
         }
 
         next()
