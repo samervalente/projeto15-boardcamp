@@ -32,7 +32,7 @@ async function listCustomersById(req,res){
     const id = Number(req.params.id)
     try {
         const {rows: customer} = await connection.query(`SELECT * FROM customers WHERE id = $1`, [id])
-        res.send(customer).status(200)
+        res.send(customer[0]).status(200)
     } catch (error) {
         res.sendStatus(500)
     }
