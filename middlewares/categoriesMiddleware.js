@@ -10,9 +10,9 @@ async function validateCategorie(req, res, next){
     if(result.error){
         return res.sendStatus(400)
     }
-    console.log("rodou")
+    
     const {rows: categorieDB} = await connection.query(`SELECT * FROM categories WHERE name = '${categorie.name}'`)
-   console.log(categorieDB)
+  
     if(categorieDB.length !== 0){
         return res.sendStatus(409)
     }

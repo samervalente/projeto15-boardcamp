@@ -26,85 +26,60 @@ async function insertRent(req, res) {
             `
     );
     const currentStock = stockTotal - 1;
-    console.log(typeof stockTotal);
+ 
     await connection.query(`UPDATE games SET "stockTotal"=${currentStock} WHERE id = ${gameId}`);
 
     res.send(rent).status(200);
   } catch (error) {
-    console.log(error);
+  
     res.sendStatus(500);
   }
 }
 
 async function listRentals(req, res){
-
-    try {
-        if(req.query.customerId){
-          const {rows: rentalsCustomer} = await connection.query(`SELECT rentals.*, customers.id as "idCustomer", customers.name, games.id as "idGame", games.name as "gameName", games."categoryId", categories.name as "categoryName" FROM rentals JOIN customers ON customers.id = rentals."customerId" JOIN games ON games.id = rentals."gameId" JOIN categories ON categories.id = games."categoryId"
-          WHERE rentals."customerId" = $1`,[req.query.customerId])
-
-          let JoinRentals = rentalsCustomer.map(obj => ({
-            ...obj,
-            customer: {id: obj.idCustomer, name: obj.name},
-            game: {id: obj.idGame, name: obj.gameName, categoryId: obj.categoryId, categoryName: obj.categoryName},
-          }))
-          
-          for(const rent of JoinRentals){
-            delete rent.idCustomer;
-            delete rent.name;
-            delete rent.idGame
-            delete rent.gameName
-            delete rent.categoryId;
-            delete rent.categoryName
-          }
-
-          return res.send(JoinRentals)
-        }
-
-        if(req.query.gameId){
-          const {rows: gamesId} = await connection.query(`SELECT rentals.*, customers.id as "idCustomer", customers.name, games.id as "idGame", games.name as "gameName", games."categoryId", categories.name as "categoryName" FROM rentals JOIN customers ON customers.id = rentals."customerId" JOIN games ON games.id = rentals."gameId" JOIN categories ON categories.id = games."categoryId"
-          WHERE rentals."gameId" = $1`,[req.query.gameId])
-
-
-          let JoinRentals = gamesId.map(obj => ({
-            ...obj,
-            customer: {id: obj.idCustomer, name: obj.name},
-            game: {id: obj.idGame, name: obj.gameName, categoryId: obj.categoryId, categoryName: obj.categoryName},
-          }))
-          
-          for(const rent of JoinRentals){
-            delete rent.idCustomer;
-            delete rent.name;
-            delete rent.idGame
-            delete rent.gameName
-            delete rent.categoryId;
-            delete rent.categoryName
-          }
     
-          return res.send(JoinRentals)
+    try {
+        let rentals;
+    
+        //Select rentals by customer id
+        if(req.query.customerId || req.query.gameId){
+          
+          let query;
+          if(req.query.customerId) query = {key: 'customerId', value: req.query.customerId}
+          if(req.query.gameId) query = {key: 'gameId', value:req.query.gameId}
 
+          const {rows: rentalsByQueryString} = await connection.query(`SELECT rentals.*, customers.id as "idCustomer", customers.name, games.id as "idGame", games.name as "gameName", games."categoryId", categories.name as "categoryName" FROM rentals JOIN customers ON customers.id = rentals."customerId" JOIN games ON games.id = rentals."gameId" JOIN categories ON categories.id = games."categoryId"
+          WHERE rentals."${query.key}" = $1`,[query.value])
+           
+          rentals = rentalsByQueryString;
         }
-
-        const {rows: rentals} = await connection.query('SELECT rentals.*, customers.id as "idCustomer", customers.name, games.id as "idGame", games.name as "gameName", games."categoryId", categories.name as "categoryName" FROM rentals JOIN customers ON customers.id = rentals."customerId" JOIN games ON games.id = rentals."gameId" JOIN categories ON categories.id = games."categoryId"')
-
+        
+        //Select all games
+        if(!req.query.customerId && !req.query.gameId){
+          const {rows: allRentals} = await connection.query('SELECT rentals.*, customers.id as "idCustomer", customers.name, games.id as "idGame", games.name as "gameName", games."categoryId", categories.name as "categoryName" FROM rentals JOIN customers ON customers.id = rentals."customerId" JOIN games ON games.id = rentals."gameId" JOIN categories ON categories.id = games."categoryId"')
+          
+          rentals = allRentals     
+        }
+        
         let JoinRentals = rentals.map(obj => ({
           ...obj,
           customer: {id: obj.idCustomer, name: obj.name},
           game: {id: obj.idGame, name: obj.gameName, categoryId: obj.categoryId, categoryName: obj.categoryName},
         }))
-        
-        for(const rent of JoinRentals){
-          delete rent.idCustomer;
-          delete rent.name;
-          delete rent.idGame
-          delete rent.gameName
-          delete rent.categoryId;
-          delete rent.categoryName
-        }
+
+          for(const rent of JoinRentals){
+            delete rent.idCustomer;
+            delete rent.name;
+            delete rent.idGame
+            delete rent.gameName
+            delete rent.categoryId;
+            delete rent.categoryName;
+          }
         
         res.send(JoinRentals).status(200)
+
     } catch (error) {
-      console.log(error)
+      
         res.sendStatus(500)
     }
 }
@@ -144,7 +119,7 @@ async function finishRent(req, res){
 
         res.sendStatus(200)
     } catch (error) {
-      console.log(error)
+     
         res.sendStatus(500)
     }
 }

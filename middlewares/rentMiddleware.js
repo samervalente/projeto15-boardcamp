@@ -16,7 +16,7 @@ async function validateRent(req, res, next){
         ON customers.id = $1 AND games.id = $2`,[rent.customerId, rent.gameId])
         
         if(CustomerAndGameData.length === 0){
-            return res.status(404).send("Rent don't found")
+            return res.status(404).send("Customer id or game id don't found")
         }
 
         if(CustomerAndGameData[0].stockTotal === 0){
@@ -27,7 +27,7 @@ async function validateRent(req, res, next){
         next()
 
     } catch (error) {
-        console.log(error)
+       
          res.sendStatus(500)
     }
 }
@@ -51,7 +51,7 @@ async function validateFinishRent(req, res, next){
         next()
         
     } catch (error) {
-        console.log(error)
+        
         res.sendStatus(500)
     }
 }
