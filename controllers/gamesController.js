@@ -29,7 +29,7 @@ async function listGames(req, res) {
             const {rows: games} = await connection.query(`SELECT games.*, categories.name as "categoryName" FROM games
             JOIN categories
             ON games."categoryId" = categories.id`)
-                res.send(games).status(200)
+                res.status(200).send(games)
         }
 
     } catch (error) {
